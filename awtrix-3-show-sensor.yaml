@@ -23,6 +23,13 @@ blueprint:
       selector:
         number:
           mode: box
+    decimal_places:
+      name: decimal places
+      description: How many decimal places of the sensor value do you want to display?
+      default: 0
+      selector:
+        number:
+          mode: box
     mqqt_topic:
       name: mqtt topic
       default: awtrix-light-1/custom/my-app-name
@@ -40,6 +47,7 @@ variables:
   icon_id: !input icon_id
   threshold_no_show: !input threshold_no_show
   threshold_warn: !input threshold_warn
+  decimal_places: !input decimal_places
   position: !input position
 trigger:
   - platform: state
@@ -55,9 +63,10 @@ action:
     data:
       topic: !input mqqt_topic
       payload: >-
-        {% set value = float(states(sensor)) %}
+        {% set value = float(states(sensor, rounded=false)) %}
+        {% set unit = state_attr(sensor, 'unit_of_measurement') %}
         {% set baseNotification = { "icon": icon_id, "text":
-        states(sensor, rounded=true, with_unit=true),
+         value | round(decimal_places) | string + ' ' + unit,
         "pos": position
         }  %}
         {% set warnNotification = {
