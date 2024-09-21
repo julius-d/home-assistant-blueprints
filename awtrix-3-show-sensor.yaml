@@ -1,6 +1,9 @@
 blueprint:
   name: Awtrix 3 app to show sensor value
-  description: Netatmo
+  description: >
+    Creates an Awtrix 3 application via an MQTT message.
+    Particularly useful for displaying sensor values from a Netatmo weather station
+    or a solar system
   domain: automation
   input:
     sensor:
