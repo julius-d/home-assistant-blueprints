@@ -1,0 +1,70 @@
+blueprint:
+  name: Awtrix light app to show sensor value
+  description: Netatmo
+  domain: automation
+  input:
+    weather_sensor:
+      name: Weather Sensor
+      description: This sensor will be shown on awtrix light.
+      selector:
+        entity:
+          domain:
+            - sensor
+          multiple: false
+    threshold_no_show:
+      name: threshold no show
+      description: If sensor value is below this value do not show this custom app on awtrix light.
+      selector:
+        number:
+          mode: box
+    threshold_warn:
+      name: threshold warn
+      description: If sensor value is above this value show the value in red.
+      selector:
+        number:
+          mode: box
+    mqqt_topic:
+      name: mqtt topic
+      default: awtrix-light-1/custom/my-app-name
+    icon_id:
+      name: icon id
+    position:
+      name: position
+      description: At which postion shall the custom app be shown
+      default: 1
+      selector:
+        number:
+          mode: box
+variables:
+  weather_sensor: !input weather_sensor
+  icon_id: !input icon_id
+  threshold_no_show: !input threshold_no_show
+  threshold_warn: !input threshold_warn
+  position: !input position
+trigger:
+  - platform: state
+    entity_id:
+      - !input weather_sensor
+  - platform: time_pattern
+    hours: "*"
+  - platform: time
+    at: "06:30:04"
+condition: []
+action:
+  - service: mqtt.publish
+    data:
+      topic: !input mqqt_topic
+      payload: >-
+        {% set value = float(states(weather_sensor)) %}
+        {% set baseNotification = { "icon": icon_id, "text":
+        states(weather_sensor, rounded=true, with_unit=true),
+        "pos": position
+        }  %}
+        {% set warnNotification = {
+         "color" : "#FF0000"
+        }  %}
+        {% if value <= threshold_no_show -%} {}
+        {% elif value <= threshold_warn -%} {{baseNotification | to_json }}
+        {%- else -%} {{dict(baseNotification, **warnNotification) | to_json }}
+        {%- endif %}
+mode: single
