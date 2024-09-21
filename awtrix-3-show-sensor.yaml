@@ -3,9 +3,9 @@ blueprint:
   description: Netatmo
   domain: automation
   input:
-    weather_sensor:
-      name: Weather Sensor
-      description: This sensor will be shown on awtrix light.
+    sensor:
+      name: Sensor
+      description: This sensor will be shown on awtrix 3.
       selector:
         entity:
           domain:
@@ -13,7 +13,7 @@ blueprint:
           multiple: false
     threshold_no_show:
       name: threshold no show
-      description: If sensor value is below this value do not show this custom app on awtrix light.
+      description: If sensor value is below this value do not show this custom app on awtrix 3.
       selector:
         number:
           mode: box
@@ -36,7 +36,7 @@ blueprint:
         number:
           mode: box
 variables:
-  weather_sensor: !input weather_sensor
+  sensor: !input sensor
   icon_id: !input icon_id
   threshold_no_show: !input threshold_no_show
   threshold_warn: !input threshold_warn
@@ -44,7 +44,7 @@ variables:
 trigger:
   - platform: state
     entity_id:
-      - !input weather_sensor
+      - !input sensor
   - platform: time_pattern
     hours: "*"
   - platform: time
@@ -55,9 +55,9 @@ action:
     data:
       topic: !input mqqt_topic
       payload: >-
-        {% set value = float(states(weather_sensor)) %}
+        {% set value = float(states(sensor)) %}
         {% set baseNotification = { "icon": icon_id, "text":
-        states(weather_sensor, rounded=true, with_unit=true),
+        states(sensor, rounded=true, with_unit=true),
         "pos": position
         }  %}
         {% set warnNotification = {
